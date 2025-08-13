@@ -54,10 +54,9 @@ void trim_crlf(char *s) {
 }
 
 int main(int argc, char *argv[]) {
-    /* Configura locale para UTF-8 */
     setlocale(LC_ALL, "");
 #ifdef _WIN32
-    SetConsoleOutputCP(65001); /* UTF-8 no console do Windows */
+    SetConsoleOutputCP(65001); 
 #endif
 
     if (argc < 2) {

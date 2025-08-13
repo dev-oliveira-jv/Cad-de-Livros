@@ -111,7 +111,6 @@ Livro* carregarDoArquivo(const char *nomeArquivo) {
     while (fgets(linha, sizeof(linha), arq)) {
         Livro *novo = (Livro*)malloc(sizeof(Livro));
         if (!novo) break;
-        /* formato esperado: titulo;autor;isbn;ano\n */
         int items = sscanf(linha, "%99[^;];%99[^;];%19[^;];%d",
                            novo->titulo, novo->autor, novo->isbn, &novo->ano);
         if (items < 4) { /* linha mal formada */
@@ -139,7 +138,6 @@ void salvarLista(Livro *lista, const char *nomeArquivo) {
         return;
     }
 #ifdef _WIN32
-    /* Adiciona o BOM para UTF-8 no Windows */
     unsigned char bom[] = {0xEF, 0xBB, 0xBF};
     fwrite(bom, sizeof(bom), 1, arq);
 #endif
@@ -401,10 +399,9 @@ void modoHttp(int porta) {
 
 /* Main */
 int main(int argc, char *argv[]) {
-    /* Configura locale para UTF-8 */
     setlocale(LC_ALL, "");
 #ifdef _WIN32
-    SetConsoleOutputCP(65001); /* UTF-8 no console do Windows */
+    SetConsoleOutputCP(65001); 
 #endif
 
     if (argc < 2) {
