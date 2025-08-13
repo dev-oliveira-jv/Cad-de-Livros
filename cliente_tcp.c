@@ -8,10 +8,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
 
 #ifdef _WIN32
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #include <windows.h>
     #pragma comment(lib,"ws2_32.lib")
     typedef SOCKET socket_t;
     #define CLOSESOCK closesocket
@@ -52,6 +54,12 @@ void trim_crlf(char *s) {
 }
 
 int main(int argc, char *argv[]) {
+    /* Configura locale para UTF-8 */
+    setlocale(LC_ALL, "");
+#ifdef _WIN32
+    SetConsoleOutputCP(65001); /* UTF-8 no console do Windows */
+#endif
+
     if (argc < 2) {
         printf("Uso: %s <IP> [porta]\n", argv[0]);
         printf("Ex: %s 127.0.0.1\n", argv[0]);
@@ -189,4 +197,3 @@ int main(int argc, char *argv[]) {
     SOCKCLEAN();
     return 0;
 }
-

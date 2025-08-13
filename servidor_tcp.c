@@ -8,10 +8,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <locale.h>
+#include <errno.h>
 
 #ifdef _WIN32
     #include <winsock2.h>
     #include <ws2tcpip.h>
+    #include <windows.h>
     #pragma comment(lib,"ws2_32.lib")
     typedef SOCKET socket_t;
     #define CLOSESOCK closesocket
@@ -98,7 +101,10 @@ void removerLivro(Livro **lista, const char *isbn) {
 
 Livro* carregarDoArquivo(const char *nomeArquivo) {
     FILE *arq = fopen(nomeArquivo, "r");
-    if (!arq) return NULL;
+    if (!arq) {
+        printf("Erro ao abrir arquivo %s para leitura: %s\n", nomeArquivo, strerror(errno));
+        return NULL;
+    }
     Livro *lista = NULL;
     char linha[512];
 
@@ -128,9 +134,18 @@ void salvarEmArquivo(FILE *arq, Livro *lista) {
 
 void salvarLista(Livro *lista, const char *nomeArquivo) {
     FILE *arq = fopen(nomeArquivo, "w");
-    if (!arq) { printf("Erro ao abrir arquivo para escrita\n"); return; }
+    if (!arq) {
+        printf("Erro ao abrir arquivo %s para escrita: %s\n", nomeArquivo, strerror(errno));
+        return;
+    }
+#ifdef _WIN32
+    /* Adiciona o BOM para UTF-8 no Windows */
+    unsigned char bom[] = {0xEF, 0xBB, 0xBF};
+    fwrite(bom, sizeof(bom), 1, arq);
+#endif
     salvarEmArquivo(arq, lista);
     fclose(arq);
+    printf("Arquivo %s salvo com sucesso.\n", nomeArquivo);
 }
 
 /* cria um texto com a lista (para TCP) */
@@ -386,6 +401,12 @@ void modoHttp(int porta) {
 
 /* Main */
 int main(int argc, char *argv[]) {
+    /* Configura locale para UTF-8 */
+    setlocale(LC_ALL, "");
+#ifdef _WIN32
+    SetConsoleOutputCP(65001); /* UTF-8 no console do Windows */
+#endif
+
     if (argc < 2) {
         printf("Uso: %s [--modo-normal | --modo-servidor-tcp [porta] | --modo-http [porta]]\n", argv[0]);
         return 1;
@@ -408,4 +429,3 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
